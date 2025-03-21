@@ -1,0 +1,51 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: mauloasan
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: my-brand-lambda
+service: my-lambda-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  profile: mauloasan  # Specify the AWS profile you want to use
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:us-east-1:996197173188:table/Countries
+
+functions:
+  createCountry:
+    handler: handler/country/CreateCountry.CreateCountry
+    events:
+      - http:
+          path: countries
+          method: post
+  GetAllCountries:
+    handler: handler/country/GetAll.GetAllCountries
+    events:
+      - http:
+          path: countries
+          method: get
+
+resources:
+  Resources:
+    CountriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Countries
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: N
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
