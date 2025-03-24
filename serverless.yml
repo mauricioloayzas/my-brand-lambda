@@ -16,6 +16,7 @@ provider:
         - Effect: Allow
           Action:
             - dynamodb:PutItem
+            - dynamodb:GetItem
             - dynamodb:Scan
           Resource:
             - arn:aws:dynamodb:us-east-1:996197173188:table/Countries
@@ -27,12 +28,37 @@ functions:
       - http:
           path: countries
           method: post
+          cors:
+            origins:
+              - "*"
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
   GetAllCountries:
     handler: handler/country/GetAll.GetAllCountries
     events:
       - http:
           path: countries
           method: get
+          cors:
+            origins:
+              - "*"
+            allowCredentials: true
+  getCountry:
+    handler: handler/country/Get.getCountry
+    events:
+      - http:
+          path: countries/{id}
+          method: get
+          cors:
+            origins:
+              - "*"
+            allowCredentials: true
 
 resources:
   Resources:
