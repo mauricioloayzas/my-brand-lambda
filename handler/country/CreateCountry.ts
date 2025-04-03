@@ -1,29 +1,31 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { DynamoDB } from 'aws-sdk';
 import {CountryDTO} from "./dtos/CountryDTO";
+import getNextId from "../../services/database/getNextId";
 
 // Create DynamoDB document client
 const dynamoDb = new DynamoDB.DocumentClient();
-
+const tableName: string = "Countries";
 export const CreateCountry: APIGatewayProxyHandler = async (event) => {
   const body: any = JSON.parse(event.body || '{}');
 
   // Validate input data
-  if (!body.id || !body.name || typeof body.id !== 'number') {
+  if (!body.name || typeof body.name !== 'string') {
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: 'Invalid input: id must be a number and name is required' }),
+      body: JSON.stringify({ message: 'Invalid input: name must be a string' }),
     };
   }
 
+  const newId: number = await getNextId(tableName);
   // Create DTO object
   const country: CountryDTO = {
-    id: body.id,
+    id: newId,
     name: body.name,
   };
 
   const params = {
-    TableName: 'Countries', // DynamoDB table name
+    TableName: tableName, // DynamoDB table name
     Item: country,
   };
 

@@ -18,8 +18,10 @@ provider:
             - dynamodb:PutItem
             - dynamodb:GetItem
             - dynamodb:Scan
+            - dynamodb:UpdateItem
           Resource:
             - arn:aws:dynamodb:us-east-1:996197173188:table/Countries
+            - arn:aws:dynamodb:us-east-1:996197173188:table/Counters
 
 functions:
   createCountry:
@@ -55,6 +57,16 @@ functions:
       - http:
           path: countries/{id}
           method: get
+          cors:
+            origins:
+              - "*"
+            allowCredentials: true
+  editCountry:
+    handler: handler/country/Edit.editCountry
+    events:
+      - http:
+          path: countries/{id}
+          method: put
           cors:
             origins:
               - "*"
