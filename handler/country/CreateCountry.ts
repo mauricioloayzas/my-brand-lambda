@@ -6,7 +6,7 @@ import getNextId from "../../services/database/getNextId";
 // Create DynamoDB document client
 const dynamoDb = new DynamoDB.DocumentClient();
 const tableName: string = "Countries";
-export const CreateCountry: APIGatewayProxyHandler = async (event) => {
+export const CreateCountry: APIGatewayProxyHandler = async (event: any) => {
   const body: any = JSON.parse(event.body || '{}');
 
   // Validate input data
@@ -31,8 +31,15 @@ export const CreateCountry: APIGatewayProxyHandler = async (event) => {
 
   try {
     await dynamoDb.put(params).promise();
+
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    };
+
     return {
       statusCode: 200,
+      headers: corsHeaders,
       body: JSON.stringify({ message: 'Country saved successfully', country: country }),
     };
   } catch (error: any) {

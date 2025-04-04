@@ -4,8 +4,8 @@ import { CountryDTO } from "./dtos/CountryDTO";
 
 // Create DynamoDB document client
 const dynamoDb = new DynamoDB.DocumentClient();
-
-export const editCountry: APIGatewayProxyHandler = async (event) => {
+const tableName: string = "Countries";
+export const editCountry: APIGatewayProxyHandler = async (event: any) => {
   try {
     const id = Number(event.pathParameters?.id);
 
@@ -31,7 +31,7 @@ export const editCountry: APIGatewayProxyHandler = async (event) => {
       Key: { id },
     };
 
-    return dynamoDb.get(params).promise().then((result) => {
+    return await dynamoDb.get(params).promise().then(async (result) =>  {
       if (!result.Item) {
         return {
           statusCode: 404,
@@ -43,10 +43,31 @@ export const editCountry: APIGatewayProxyHandler = async (event) => {
         id: result.Item.id,
         name: body.name,
       };
+      const params = {
+        TableName: tableName,
+        Key: {
+          id: result.Item.id,
+        },
+        UpdateExpression: "SET #name = :name",
+        ExpressionAttributeNames: {
+          "#name": "name", // because 'name' is a reserved word in DynamoDB
+        },
+        ExpressionAttributeValues: {
+          ":name": body.name,
+        },
+        ReturnValues: "ALL_NEW",
+      };
+      await  dynamoDb.update(params).promise();
+
+      const corsHeaders = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+      };
 
       return {
         statusCode: 200,
-        body: JSON.stringify(country),
+        headers: corsHeaders,
+        body: JSON.stringify({ message: 'Country saved successfully', country: country }),
       };
     });
   } catch (error: any) {
